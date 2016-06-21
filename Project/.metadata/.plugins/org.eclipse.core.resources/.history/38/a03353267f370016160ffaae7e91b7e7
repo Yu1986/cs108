@@ -1,0 +1,17 @@
+package assign1;
+
+
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
+public class hhjkjkjTest {
+
+	@Test
+	public void testBlowup1() {
+		// basic cases
+		assertEquals("xxaaaabb", StringCode.blowup("xx3abb"));
+		assertEquals("xxxZZZZ", StringCode.blowup("2x3Z"));
+	}
+	
+}
