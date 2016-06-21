@@ -33,7 +33,7 @@ public class StringCode {
 		return maxRun;
 	}
 
-	
+	   
 	/**
 	 * Given a string, for each digit in the original string,
 	 * replaces the digit with that many occurrences of the character
