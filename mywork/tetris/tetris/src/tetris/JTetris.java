@@ -8,6 +8,8 @@ import java.util.*;
 import java.awt.event.*;
 import javax.swing.event.*;
 
+import tetris.Brain.Move;
+
 import java.awt.Toolkit;
 
 
@@ -91,6 +93,9 @@ public class JTetris extends JComponent {
 	protected javax.swing.Timer timer;
 	protected JSlider speed;
 	protected JCheckBox testButton;
+	protected JCheckBox brainMode;
+	
+	DefaultBrain brain;
 	
 	public final int DELAY = 400;	// milliseconds per tick
 	
@@ -109,6 +114,8 @@ public class JTetris extends JComponent {
 		
 		pieces = Piece.getPieces();
 		board = new Board(WIDTH, HEIGHT + TOP_SPACE);
+		
+		brain = new DefaultBrain();
 
 
 		/*
@@ -423,6 +430,14 @@ public class JTetris extends JComponent {
 			board.undo();	// remove the piece from its old position
 		}
 		
+		if (brainMode.isSelected() && verb == DOWN) {
+			if (currentPiece != null) {
+				Brain.Move mv = brain.bestMove(board, currentPiece, board.getHeight() - 4, null);
+				currentPiece = mv.piece;
+				currentX = mv.x;
+			}
+		}
+		
 		// Sets the newXXX ivars
 		computeNewPosition(verb);
 		
@@ -675,6 +690,9 @@ public class JTetris extends JComponent {
 		testButton = new JCheckBox("Test sequence");
 		panel.add(testButton);
 		
+		panel.add(new JLabel("Brain:"));
+		brainMode = new JCheckBox("Brain active");
+		panel.add(brainMode);
 		
 		return panel;
 	}

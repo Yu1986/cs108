@@ -14,9 +14,10 @@ public class Board	{
 	private int width;
 	private int height;
 	private boolean[][] grid;
+	private boolean[][] gridBackUp;
+	private boolean backRestored;
 	private boolean DEBUG = true;
 	boolean committed;
-	private int highest;
 	
 	// Here a few trivial methods are provided:
 	
@@ -28,10 +29,11 @@ public class Board	{
 		this.width = width;
 		this.height = height;
 		grid = new boolean[height][width];
+		gridBackUp = new boolean[height][width];
+		backRestored = true;
 		committed = true;
 		
 		// YOUR CODE HERE
-		highest = -1;
 	}
 	
 	
@@ -56,7 +58,17 @@ public class Board	{
 	 For an empty board this is 0.
 	*/
 	public int getMaxHeight() {	 
-		return highest+1; // YOUR CODE HERE
+		int i = 0;
+		for (i=height-1; i>=0; i--) {
+			int j = 0;
+			for (j=0; j<width; j++) {
+				if (grid[i][j]) break;
+			}
+			if(j < width) {
+				break;
+			}
+		}
+		return i+1; // YOUR CODE HERE
 	}
 	
 	
@@ -96,7 +108,7 @@ public class Board	{
 	*/
 	public int getColumnHeight(int x) {
 		int i;
-		for (i=highest; i>=0; i--) {
+		for (i=getMaxHeight() - 1; i>=0; i--) {
 			if (grid[i][x]) break;
 		}
 		return i+1; // YOUR CODE HERE
@@ -150,6 +162,11 @@ public class Board	{
 	public int place(Piece piece, int x, int y) {
 		// flag !committed problem
 		if (!committed) throw new RuntimeException("place commit problem");
+		
+		for (int i=0; i<height; i++) {
+			System.arraycopy(grid[i], 0, gridBackUp[i], 0, width);
+		}
+		backRestored = false;
 			
 		if (x<0 || x+piece.getWidth() > width ||
 				y<0 || y+piece.getHeight() > height)
@@ -166,7 +183,6 @@ public class Board	{
 		for (int i=0; i<4; i++) {
 			TPoint[] pts = piece.getBody();
 			grid[y+pts[i].y][x+pts[i].x] = true;
-			if (y+pts[i].y > highest) highest = y+pts[i].y;
 			if (getRowWidth(y+pts[i].y) == width) result = PLACE_ROW_FILLED;
 		}
 		
@@ -185,7 +201,8 @@ public class Board	{
 	public int clearRows() {
 		int rowsCleared = 0;
 		// YOUR CODE HERE
-		for (int des_y=0, src_y=0; src_y<=highest;) {
+		int max_row = getMaxHeight() - 1;
+		for (int des_y=0, src_y=0; src_y<=max_row;) {
 			if (getRowWidth(src_y) == width) {
 				src_y++;
 				rowsCleared++;
@@ -201,10 +218,9 @@ public class Board	{
 		}
 		for (int y=0; y<rowsCleared; y++) {
 			for (int i=0; i<width; i++) {
-				grid[highest-y][i] = false;
+				grid[max_row-y][i] = false;
 			}
 		}
-		highest -= rowsCleared;
 		
 		sanityCheck();
 		return rowsCleared;
@@ -219,6 +235,12 @@ public class Board	{
 	*/
 	public void undo() {
 		// YOUR CODE HERE
+		if (!backRestored) {
+			for (int i=0; i<height; i++) {
+				System.arraycopy(gridBackUp[i], 0, grid[i], 0, width);
+			}
+			backRestored = true;
+		}
 	}
 	
 	
