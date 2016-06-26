@@ -433,8 +433,10 @@ public class JTetris extends JComponent {
 		if (brainMode.isSelected() && verb == DOWN) {
 			if (currentPiece != null) {
 				Brain.Move mv = brain.bestMove(board, currentPiece, board.getHeight() - 4, null);
-				currentPiece = mv.piece;
-				currentX = mv.x;
+				if (mv != null) {
+					currentPiece = mv.piece;
+					currentX = mv.x;
+				}
 			}
 		}
 		
