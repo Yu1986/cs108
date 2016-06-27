@@ -15,7 +15,6 @@ public class Board	{
 	private int height;
 	private boolean[][] grid;
 	private boolean[][] gridBackUp;
-	private boolean backRestored;
 	private boolean DEBUG = true;
 	boolean committed;
 	
@@ -30,7 +29,6 @@ public class Board	{
 		this.height = height;
 		grid = new boolean[height][width];
 		gridBackUp = new boolean[height][width];
-		backRestored = true;
 		committed = true;
 		
 		// YOUR CODE HERE
@@ -166,7 +164,7 @@ public class Board	{
 		for (int i=0; i<height; i++) {
 			System.arraycopy(grid[i], 0, gridBackUp[i], 0, width);
 		}
-		backRestored = false;
+		committed = false;
 			
 		if (x<0 || x+piece.getWidth() > width ||
 				y<0 || y+piece.getHeight() > height)
@@ -235,11 +233,11 @@ public class Board	{
 	*/
 	public void undo() {
 		// YOUR CODE HERE
-		if (!backRestored) {
+		if (!committed) {
 			for (int i=0; i<height; i++) {
 				System.arraycopy(gridBackUp[i], 0, grid[i], 0, width);
 			}
-			backRestored = true;
+			committed = true;
 		}
 	}
 	
