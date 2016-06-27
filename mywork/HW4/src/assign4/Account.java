@@ -33,15 +33,16 @@ public class Account {
 	
 	public int transfer(Transaction tr, Transaction.TRAN_TYPE type) {
 		int ret = -1;
-		
-		if (type == Transaction.TRAN_TYPE.OUT && tr.srcAct == id) {
-			balance -= tr.value;
-			log.add(new TransactionLog(tr, type));
-			ret = 0;
-		} else if (type == Transaction.TRAN_TYPE.IN && tr.dstAct == id) {
-			balance += tr.value;
-			log.add(new TransactionLog(tr, type));
-			ret = 0;
+		synchronized(this){
+			if (type == Transaction.TRAN_TYPE.OUT && tr.srcAct == id) {
+				balance -= tr.value;
+				log.add(new TransactionLog(tr, type));
+				ret = 0;
+			} else if (type == Transaction.TRAN_TYPE.IN && tr.dstAct == id) {
+				balance += tr.value;
+				log.add(new TransactionLog(tr, type));
+				ret = 0;
+			}
 		}
 		//System.out.printf("%s, %s\n", tr.toString(), this.toString());
 		
