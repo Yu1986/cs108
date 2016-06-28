@@ -14,6 +14,7 @@ public class Board	{
 	private int width;
 	private int height;
 	private boolean[][] grid;
+	private boolean[][] gridBackup;
 	private boolean DEBUG = true;
 	boolean committed;
 	
@@ -25,12 +26,13 @@ public class Board	{
 	 measured in blocks.
 	*/
 	public Board(int width, int height) {
+		//Jie's code here
 		this.width = width;
 		this.height = height;
 		grid = new boolean[width][height];
+		gridBackup = new boolean[width][height];
 		committed = true;
 		
-		// YOUR CODE HERE
 	}
 	
 	
@@ -55,7 +57,19 @@ public class Board	{
 	 For an empty board this is 0.
 	*/
 	public int getMaxHeight() {	 
-		return 0; // YOUR CODE HERE
+		//Jie's code here
+		int maxHeight = 0;
+		int colHeight = 0;
+		for(int i=0; i<width; i++){
+			for(int j=height-1; j>=0; j--){
+				if(grid[i][j]){
+					colHeight = j+1;
+					break;
+				}
+			}
+			maxHeight = Math.max(colHeight, maxHeight);
+		}
+		return maxHeight; 
 	}
 	
 	
@@ -65,7 +79,7 @@ public class Board	{
 	*/
 	public void sanityCheck() {
 		if (DEBUG) {
-			// YOUR CODE HERE
+			//skip this part
 		}
 	}
 	
@@ -79,7 +93,13 @@ public class Board	{
 	 to compute this fast -- O(skirt length).
 	*/
 	public int dropHeight(Piece piece, int x) {
-		return 0; // YOUR CODE HERE
+		// Jie's code 
+		int dropH = 0;
+		for(int i=0; i <piece.getWidth(); i++){
+			int h = getColumnHeight(x+i) - piece.getSkirt()[i];
+			if(dropH < h) dropH = h;
+		}
+		return dropH;
 	}
 	
 	
@@ -89,7 +109,13 @@ public class Board	{
 	 The height is 0 if the column contains no blocks.
 	*/
 	public int getColumnHeight(int x) {
-		return 0; // YOUR CODE HERE
+		//Jie's code
+		int i;
+		for(i= getMaxHeight()-1; i>=0; i--){
+			if(grid[x][i]) break;
+			
+		}
+		return i+1; 
 	}
 	
 	
@@ -98,7 +124,12 @@ public class Board	{
 	 the given row.
 	*/
 	public int getRowWidth(int y) {
-		 return 0; // YOUR CODE HERE
+		//Jie's code
+	   int count = 0;
+	   for(int i=0; i<width; i++){
+		   if(grid[i][y]) count++;
+	   }
+		 return count; 
 	}
 	
 	
@@ -108,7 +139,10 @@ public class Board	{
 	 always return true.
 	*/
 	public boolean getGrid(int x, int y) {
-		return false; // YOUR CODE HERE
+		//Jie's code
+		if(x<0 || x>=width || y<0 || y>=height) return true;
+		
+		return grid[x][y]; 
 	}
 	
 	
@@ -135,9 +169,29 @@ public class Board	{
 		// flag !committed problem
 		if (!committed) throw new RuntimeException("place commit problem");
 			
-		int result = PLACE_OK;
+		//Jie's code
+		for(int i=0; i<width; i++){
+			System.arraycopy(grid[i], 0, gridBackup[i], 0, height);
+		}
+		committed = false;
 		
-		// YOUR CODE HERE
+		if(x<0 || x+piece.getWidth() > width || y<0 || y+piece.getHeight()> height){
+			return PLACE_OUT_BOUNDS;
+		}
+		
+		for(int i=0; i<4; i++){
+			TPoint[] pts = piece.getBody();
+			if(getGrid(x+pts[i].x, y+pts[i].y)){
+				return PLACE_BAD;
+			}
+		}
+		int result = PLACE_OK;
+		for(int i=0; i<4; i++){
+			TPoint[] pts = piece.getBody();
+			grid[x+pts[i].x][y+pts[i].y] = true;
+			if(getRowWidth(y+pts[i].y) == width) result = PLACE_ROW_FILLED;
+		}
+	
 		
 		return result;
 	}
@@ -149,7 +203,27 @@ public class Board	{
 	*/
 	public int clearRows() {
 		int rowsCleared = 0;
-		// YOUR CODE HERE
+		// Jie's code
+		int cur_height = getMaxHeight()-1;
+		for(int des_y=0, src_y=0; src_y<=cur_height;){
+			if(getRowWidth(src_y) == width){
+				src_y++;
+				rowsCleared++;
+			}else{
+				if(src_y != des_y){
+					for(int i=0; i<width; i++){
+						grid[i][des_y] = grid[i][src_y];
+					}
+				}
+				src_y++;
+				des_y++;
+			}
+		}
+		for(int x=0; x<rowsCleared; x++){
+			for(int i=0; i<width; i++){
+				grid[i][cur_height-x] = false;
+			}
+		}
 		sanityCheck();
 		return rowsCleared;
 	}
@@ -164,7 +238,13 @@ public class Board	{
 	 See the overview docs.
 	*/
 	public void undo() {
-		// YOUR CODE HERE
+		// Jie's code
+		if(!committed){
+			for(int i=0; i<width; i++){
+				System.arraycopy(gridBackup[i], 0, grid[i], 0, height);
+			}
+			committed = true;
+		}
 	}
 	
 	

@@ -1,6 +1,6 @@
 package assign1;
 
-import java.util.*;
+import java.util.Collection;
 
 public class Appearances {
 	
@@ -11,6 +11,11 @@ public class Appearances {
 	 */
 	public static <T> int sameCount(Collection<T> a, Collection<T> b) {
 		return 0; // TODO ADD CODE HERE
+	}
+
+	@Override
+	public String toString() {
+		return "Appearances []";
 	}
 	
 }

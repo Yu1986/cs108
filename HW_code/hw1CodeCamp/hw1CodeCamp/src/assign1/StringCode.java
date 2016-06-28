@@ -1,8 +1,5 @@
 package assign1;
 
-import java.util.HashSet;
-import java.util.Set;
-
 // CS108 HW1 -- String static methods
 
 public class StringCode {
@@ -17,25 +14,25 @@ public class StringCode {
 		if (str == null || str.length() == 0) return 0;
 		char pre = str.charAt(0);
 		
-		int curRun = 1;
+		int cR = 1;
+	
 		int maxRun = 1;
 		for (int i= 1; i<str.length(); i++) {
 			if (pre == str.charAt(i)) {
-				curRun++;
+				cR++;
 			} else {
-				curRun = 1;
+				cR = 1;
 			}
-			if (curRun > maxRun) {
-				maxRun = curRun;
+			if (cR > maxRun) {
+				maxRun = cR;
 			}
 			pre = str.charAt(i);
 		}
-		return maxRun;
+			return maxRun;
 	}
 
 	   
 	/**
-	 * Given a string, for each digit in the original string,
 	 * replaces the digit with that many occurrences of the character
 	 * following. So the string "a3tx2z" yields "attttxzzz".
 	 * @param str
@@ -49,7 +46,7 @@ public class StringCode {
 	 * Given 2 strings, consider all the substrings within them
 	 * of length len. Returns true if there are any such substrings
 	 * which appear in both strings.
-	 * Compute this in linear time using a HashSet. Len will be 1 or more.
+	 * Compute this in linear time using a HashSet. Len will be 1 or more.o
 	 */
 	public static boolean stringIntersect(String a, String b, int len) {
 		return false; // TO DO ADD YOUR CODE HERE

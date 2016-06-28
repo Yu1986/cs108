@@ -35,7 +35,32 @@ public class Piece {
 	 Makes its own copy of the array and the TPoints inside it.
 	*/
 	public Piece(TPoint[] points) {
-		// YOUR CODE HERE
+		// Jie's code 
+		body = points;
+		width = 0;
+		for (int i=0; i<4; i++) {
+			if (body[i].x > width) width = body[i].x;
+		}
+		++width;
+		height = 0;
+		for (int i=0; i<4; i++) {
+			if (body[i].y > height) height = body[i].y;
+		}
+		++height;
+		next = null;
+		
+		skirt = new int[width];
+		for (int i=0; i<width; i++) {
+			int cur_skirt = 5;
+			for (int j=0; j<4; j++) {
+				if (i == body[j].x) {
+					if (body[j].y < cur_skirt) {
+						cur_skirt = body[j].y;
+					}
+				}
+			}
+			skirt[i] = cur_skirt;
+		}
 	}
 	
 
@@ -88,7 +113,13 @@ public class Piece {
 	 rotated from the receiver.
 	 */
 	public Piece computeNextRotation() {
-		return null; // YOUR CODE HERE
+		//Jie's code
+		TPoint[] rotatePoint = new TPoint[4];
+		
+		for (int i=0; i<4; i++) {
+			rotatePoint[i] = new TPoint(body[i].y, width-1-body[i].x);
+		}
+		return new Piece(rotatePoint); 
 	}
 
 	/**
@@ -120,7 +151,15 @@ public class Piece {
 		if (!(obj instanceof Piece)) return false;
 		Piece other = (Piece)obj;
 		
-		// YOUR CODE HERE
+		// Jie's code
+		for (int i=0; i<4; i++) {
+			for (int j=0; j<4; j++) {
+				if (other.body[i].equals(body[j])) {
+					break;
+				}
+				if (j >= 4) return false;
+			}
+		}
 		return true;
 	}
 
@@ -187,7 +226,15 @@ public class Piece {
 	 to the first piece.
 	*/
 	private static Piece makeFastRotations(Piece root) {
-		return null; // YOUR CODE HERE
+		//Jie's code
+		Piece originalRoot = root;
+		for (int i=0; i<3; i++) {
+			Piece nextPiece = root.computeNextRotation();
+			root.next = nextPiece;
+			root = nextPiece;
+		}
+		root.next = originalRoot;
+		return originalRoot;
 	}
 	
 	
