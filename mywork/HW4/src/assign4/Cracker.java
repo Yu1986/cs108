@@ -2,6 +2,7 @@ package assign4;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class Cracker {
 	// Array of chars used to produce strings
@@ -72,7 +73,7 @@ public class Cracker {
 		index[0] += carry;
 	}
 	
-	public static String crackWorkTask(String hashStr, int maxStringLen, int dictStart, int dictEnd) {
+	public static String crack(String hashStr, int maxStringLen, int dictStart, int dictEnd) {
 		
 		for (int width=1; width<=maxStringLen; width++) {
 			char[] tryStr = new char[width];
@@ -93,16 +94,123 @@ public class Cracker {
 		return null;
 	}
 	
-	public static String crack(String hashStr, int maxStringLen, int threadNum) {
-		String result = crackWorkTask(hashStr, maxStringLen, 0, CHARS.length);
-		return result;
+	private static class Result {
+		String str;
+		int threadId;
+		
+		Result(String str, int id) {
+			this.str = str;
+			threadId = id;
+		}
 	}
+	
+	private static class  CrackWorker extends Thread {
+		private int id;
+		private int dictStart;
+		private int dictEnd;
+		private String hashStr;
+		private int maxStrLen; 
+		private ArrayBlockingQueue<Result> resultQ;
+		private boolean isExit;
+		public CrackWorker(int id, String hashStr, int maxStrLen, int dictStart, int dictEnd,
+				ArrayBlockingQueue<Result> resultQ) {
+			this.id = id;
+			this.dictStart = dictStart;
+			this.dictEnd = dictEnd;
+			this.hashStr = hashStr;
+			this.maxStrLen = maxStrLen;
+			this.resultQ = resultQ;
+			isExit = false;
+		}
+		
+		@Override
+		public void run() {
+			System.out.printf("Task-%d dictStart=%d, dictEnd=%d\n", id, dictStart, dictEnd);
+			String result = null;
+			for (int width=1; width<=maxStrLen; width++) {
+				char[] tryStr = new char[width];
+				int[] index = new int[width];
+				index[0] = dictStart;
+				while (index[0] < dictEnd && !isExit) {
+					for (int i=0; i<width; i++) {
+						tryStr[i] = CHARS[index[i]];
+					}
+					String hash = hexToString(generateHash(tryStr));
+					if (hash.compareTo(hashStr) == 0) {
+						result = new String(tryStr);
+						break;
+					}
+					indexInc(index);
+				}
+				if (isExit || result != null) break;
+			}
+			System.out.printf("Task-%d End\n", id);
+			if (result != null) {
+				try {
+					resultQ.put(new Result(result, id));
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+		@Override
+		public void interrupt() {
+			isExit = true;
+			super.interrupt();
+		}
+		
+		
+	}
+	
+	public static String crackScheduler(String hashStr, int maxStrLen, int threadNum) {
+		CrackWorker[] worker = new CrackWorker[threadNum];
+		int eachThread;
+		int left = 0;
+		if (CHARS.length % threadNum == 0) {
+			eachThread = CHARS.length / threadNum;
+		} else {
+			eachThread = CHARS.length / (threadNum-1);
+			left = CHARS.length - eachThread * (threadNum-1);
+		}
+		
+		ArrayBlockingQueue<Result> resultQ = new ArrayBlockingQueue<Result>(threadNum);
+		int id = 0;
+		for (int i=0; i<CHARS.length; i+=eachThread) {
+			worker[id] = new CrackWorker(id, hashStr, maxStrLen, i, i+eachThread, resultQ);
+			worker[id].start();
+			id++;
+		}
+		if (left != 0) {
+			worker[id] = new CrackWorker(id, hashStr, maxStrLen, CHARS.length - left, CHARS.length, resultQ);
+			worker[id].start();
+		}
+		
+		// Wait for thread to finish
+		try {
+			Result result = resultQ.take();
+			for (int i=0; i<threadNum; i++) {
+				if (i != result.threadId) {
+					worker[i].interrupt();
+				}
+			}
+			return result.str;
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	
 	
 	public static void main(String[] args) {
 		if (args.length == 1) {
 			System.out.println(hexToString(generateHash(args[0])));
 		} else if (args.length == 3) {
-			String result = crack(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+			String result = crackScheduler(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]));
 			if (result == null) {
 				System.out.printf("Can not crack: %s\n", args[0]);
 			} else {
