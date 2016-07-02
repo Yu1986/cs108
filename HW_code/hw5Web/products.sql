@@ -1,3 +1,4 @@
+CREATE DATABASE c_cs108_psyoung;
 USE c_cs108_psyoung;
 
 DROP TABLE IF EXISTS products;
